@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
@@ -39,24 +39,28 @@ with app.app_context():
 # Routes
 @app.route('/')
 def home():
+    return render_template('index.html')
+
+@app.route('/api')
+def api_info():
     return jsonify({
         'message': 'Task Management API',
         'version': '1.0',
         'endpoints': {
-            'GET /tasks': 'Get all tasks',
-            'GET /tasks/<id>': 'Get a specific task',
-            'POST /tasks': 'Create a new task',
-            'PUT /tasks/<id>': 'Update a task',
-            'DELETE /tasks/<id>': 'Delete a task',
-            'GET /health': 'Health check'
+            'GET /api/tasks': 'Get all tasks',
+            'GET /api/tasks/<id>': 'Get a specific task',
+            'POST /api/tasks': 'Create a new task',
+            'PUT /api/tasks/<id>': 'Update a task',
+            'DELETE /api/tasks/<id>': 'Delete a task',
+            'GET /api/health': 'Health check'
         }
     })
 
-@app.route('/health')
+@app.route('/api/health')
 def health():
     return jsonify({'status': 'healthy', 'timestamp': datetime.utcnow().isoformat()})
 
-@app.route('/tasks', methods=['GET'])
+@app.route('/api/tasks', methods=['GET'])
 def get_tasks():
     status_filter = request.args.get('status')
     priority_filter = request.args.get('priority')
@@ -71,12 +75,12 @@ def get_tasks():
     tasks = query.all()
     return jsonify([task.to_dict() for task in tasks])
 
-@app.route('/tasks/<int:task_id>', methods=['GET'])
+@app.route('/api/tasks/<int:task_id>', methods=['GET'])
 def get_task(task_id):
     task = Task.query.get_or_404(task_id)
     return jsonify(task.to_dict())
 
-@app.route('/tasks', methods=['POST'])
+@app.route('/api/tasks', methods=['POST'])
 def create_task():
     data = request.get_json()
     
@@ -107,7 +111,7 @@ def create_task():
     
     return jsonify(task.to_dict()), 201
 
-@app.route('/tasks/<int:task_id>', methods=['PUT'])
+@app.route('/api/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
     task = Task.query.get_or_404(task_id)
     data = request.get_json()
@@ -136,7 +140,7 @@ def update_task(task_id):
     
     return jsonify(task.to_dict())
 
-@app.route('/tasks/<int:task_id>', methods=['DELETE'])
+@app.route('/api/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
     task = Task.query.get_or_404(task_id)
     db.session.delete(task)

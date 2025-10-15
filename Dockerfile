@@ -23,6 +23,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy application code
 COPY app.py .
+COPY static ./static
+COPY templates ./templates
 
 # Create a non-root user
 RUN useradd -m -u 1000 appuser && \
